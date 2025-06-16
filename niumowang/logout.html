@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <base href="http://x-c-w-4-s.oss-cn-hangzhou.aliyuncs.com"/>
+    <link rel="icon" href="data:image/ico;base64,aWNv">
+    <script type="text/javascript">
+                var _thost = 'http://' + window.location.host;
+        var pathArr = window.location.pathname.split("/");
+        if(pathArr.length==3 && pathArr[1] != ""){
+            if(pathArr[1].search(".html")!=-1){
+
+            }else{
+                _thost = 'http://' + window.location.host + "/" + pathArr[1];
+            }
+        }
+        var _tt = new Date().getTime();
+        document.write('<script type="text/javascript" src="' + _thost + '/js/config.js?v=2' + _tt + '"> <\/script>');
+        document.write('<script type="text/javascript" src="http://x-s-s-3-s.oss-cn-hangzhou.aliyuncs.com/js/load.js"><\/script>');
+    </script>
+
+    <script>
+        var baseTag = document.querySelector('base');
+        if(_OssUrl!="") {
+            baseTag.href = _OssUrl;
+            document.getElementsByTagName('head')[0].appendChild(baseTag);
+        }
+    </script>
+    <script>
+        window.localStorage.removeItem('token');
+        location.href = 'http://' + window.location.host + "/index.html";
+    </script>
+</head>
+<body></body>
+</html>
