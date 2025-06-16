@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title></title>
+  <meta name='viewport'
+    content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no' />
+  <meta name="renderer" content="webkit" />
+  <meta name='apple-mobile-web-app-capable' content='yes' />
+  <meta name='full-screen' content='true' />
+  <meta name='x5-fullscreen' content='true' />
+  <meta name='360-fullscreen' content='true' />
+  <meta name="laya" screenorientation="landscape" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta http-equiv='expires' content='0' />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <script type="text/javascript">
+        var _thost = 'http://' + window.location.host;
+        document.write('<script type="text/javascript" src="' + _thost + '/config.js?v=' + new Date().getTime() + '"> <\/script>');
+  </script>
+  <script src="jquery.min.js"></script>
+  <script src="baseFun.js?v=4564564"></script>
+  <script src="baseConf.js?v=45697897"></script>
+  <script> 		
+        let unCode = sessionCache('unCode');
+        if (!getCurrentAgent() && unCode===false ){
+           window.location.href = './webLogin.html';
+        }else{
+            if (unCode && localStorage.RES ==null){
+                    getResUrl(queryUrl)
+            }else{
+                baseCDN = localStorage.RES
+                version = localStorage.version
+            }
+            
+             if (unCode === false && !urlParams.code){
+                     getWeiChatAuthUrl(queryUrl);
+                     window.location.href = siteUrl();
+                     //siteUrl();
+            }else if(urlParams.code && unCode === false){
+                 let baseUrl  = window.location.host+'/index.html'
+                 loadUserInfo(queryUrl,urlParams.code);
+    						if (urlParams.room){
+    							baseUrl  += '?room=' + urlParams.room
+    						}else if (urlParams.cardNo){
+    							baseUrl  +=  '?cardNo=' + urlParams.cardNo
+    						}else if (urlParams.skinNo){
+    							baseUrl  +=   '?skinNo=' + urlParams.skinNo
+    						}else if (urlParams.headNo){
+    							baseUrl  +=   '?headNo=' + urlParams.headNo
+    						}else if (urlParams.invitation){
+    							baseUrl  +=   '?invitation=' + urlParams.invitation
+    						}else{
+    							baseUrl = baseUrl
+    						}
+    						window.location.href = 'http://' + baseUrl             
+            }else if (urlParams.room){
+                    let roomId = urlParams.room;
+                    let type = roomId.substr(5,1);
+                    switch (type) {
+                        case 'E':
+                             document.writeln(createrDBSHtml(baseCDN));
+                            break;
+                        case '3':
+                        case '4':
+                        case 'F':
+                            document.writeln(createrHomeHtml(baseCDN));
+                            break;
+                        default:
+                            document.writeln(createrGameHtml(baseCDN));
+                            var short_url = window.location.href
+                    }
+            }else{
+                    document.writeln(createrHomeHtml(baseCDN));
+            }
+            if (unCode){
+                loadBase(queryUrl,unCode,localStorage.nickname);
+                 $("#share_url").html(window.location.href);  
+            }
+        }  
+      </script>
+      
+      
+    <script>
+        function onBridgeReady() {
+            WeixinJSBridge.call('hideOptionMenu');
+        }
+
+        if (typeof WeixinJSBridge == "undefined") {
+            if (document.addEventListener) {
+                document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+            } else if (document.attachEvent) {
+                document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
+                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+            }
+        } else {
+            onBridgeReady();
+        }
+    </script>     
+<script src="/jweixin-1.0.0.js"></script>
+</body>
+
+</html>

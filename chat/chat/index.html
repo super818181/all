@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head><title>聊天室</title>
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width,minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name=full-screen content=yes>
+    <meta name=x5-fullscreen content=true>
+    <link rel=icon href=data:image/ico;base64,aWNv>
+    <script type="text/javascript">
+        var _thost = 'http://' + window.location.host;
+        // var pathArr = window.location.pathname.split("/");
+        // if(pathArr.length==3 && pathArr[1] != ""){
+        //     if(pathArr[1].search(".html")!=-1){
+        //         //console.log(".html"); 
+        //     }else{
+        //         _thost = 'http://' + window.location.host + "/" + pathArr[1];
+        //     } 
+        // } 
+        document.write('<script type="text/javascript" src="' + _thost + '/js/config.js?v=' + new Date().getTime() + '"> <\/script>');
+    </script>
+    <script type="text/javascript" src="http://x-chat.oss-cn-hangzhou.aliyuncs.com/js/load.js?v=202402231212"></script>
+    <script>
+        function GetQueryHash(name) {
+            let hash = window.location.hash;
+            if (hash != '') {
+                var query = hash.split('?')[1];
+
+            } else {
+                var query = window.location.search.substr(1);
+
+            }
+            if (query != null) {
+                var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+                var r = query.match(reg);
+                if (r != null) {
+                    return unescape(r[2]);
+                }
+            }
+            return null
+        }
+
+        var code = GetQueryHash("code");
+        let token = window.localStorage.getItem('token');
+        let chat_token = window.localStorage.getItem('chat_token');
+        if (!chat_token) {
+            var return_url = window.location.href;
+            window.localStorage.removeItem('return_url');
+            window.localStorage.setItem('return_url', window.location.href);
+            if (DynLoading.isWeiXin()) {
+                if (code) {
+                    chat_token = "{$token}";
+                    if (chat_token != "{$token}") {
+                        window.localStorage.setItem('token', chat_token);
+                        window.localStorage.setItem('chat_token', chat_token);
+                    }
+                } else {
+                    //window.location.href = "http://" + window.location.host + '/login.html';
+                    DynLoading.gotoWx();
+                    //DynLoading.goto('login');
+                }
+            } else {
+                window.location.href = "http://" + window.location.host + '/login.html';
+            }
+        }
+        if (chat_token) {
+            var chat_adr = _wip + ':' + _wport; //12
+            var req_url = BaseUrl + '/chat1/index?tk=' + chat_token;
+            if (chat_token == '{$token}' && code) {
+                req_url = BaseUrl + '/chat1/index?code=' + code;
+            }
+            var obj = DynLoading.hall(req_url);
+            if (obj.result != 0) {
+                alert(obj.result_message);
+                var return_url = window.location.href;
+                console.log(return_url);
+                window.location.href = "http://" + window.location.host;
+            }
+            if (code && obj.data.tk != "") {
+                token = obj.data.tk;
+                window.localStorage.setItem('token', obj.data.tk);
+                window.localStorage.setItem('chat_token', obj.data.tk);
+            }
+        }
+        var phpVhref = 'http://' + chat_adr + '/';
+        var phpBrowser = '';
+        var phpIsWx = '0';
+        var phpIsXl = '0';
+        var phpWxPort = '10000';
+        var wsHost = "ws://" + _wip + ":" + _wport + "/" + obj.data.gt + "/" + obj.data.dkey;
+        var baseUrl = '/';
+        var hallName = '聊天室';
+        var phpBrowser = '';
+        var phpWxUrl = './';
+        var phpWxIp = 'ws://' + chat_adr;
+        var PhpAurl = './';
+        var baseUrl = './';
+        var oosUrl = 'http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat3/';
+        var wxConfig = '{"debug":false,"beta":false,"jsApiList":["startRecord","stopRecord","onVoiceRecordEnd","playVoice","pauseVoice","stopVoice","onVoicePlayEnd","uploadVoice","downloadVoice"],"appId":"wx6d62309386e8bf3b","nonceStr":"wajxlxgUE3","timestamp":1585164328,"url":"http:\/\/wx.wechat.com\/chat\/room?mid=228","signature":"60a66592468ee0dbf5c2ae3ef4c0bd633a46eff9"}';
+        document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+            // 通过 下面这个API隐藏右上角按钮
+            WeixinJSBridge.call('hideOptionMenu');
+        });</script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/ves3.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/rw.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/aes.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/aesjj.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/md5.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/utf.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/wx.js></script>
+    <script src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat/js/cb.js></script>
+    <link href=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat3/static/css/app.b7f0ad909c638e7dfa148dfbda2d24b8.css
+          rel=stylesheet>
+</head>
+<body>
+<div id=app></div>
+<div class=images></div>
+<script type=text/javascript
+        src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat3/static/js/manifest.a9f632ba07a2f6eeb43f.js?v=202312211212></script>
+<script type=text/javascript
+        src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat3/static/js/vendor.43931147c05b5fea5e6b.js?v=20231221121></script>
+<script type=text/javascript
+        src=http://x-chat.oss-cn-hangzhou.aliyuncs.com/chat3/static/js/app.52f2a2d5cae5edea1132.js?v=20231221121></script>
+</body>
+<script>var el = document.createElement("textarea");
+el.setAttribute("readonly", "readonly");
+el.setAttribute("id", "copy");
+el.style.position = "absolute";
+el.style.fontSize = "12px";
+el.style.left = "-99999px";
+document.body.appendChild(el);</script>
+</html>

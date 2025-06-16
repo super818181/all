@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta http-equiv="refresh" content="5;url=./">
+        <title>清理缓存</title>
+    </head>
+    <body>
+    <script type="text/javascript" charset="utf-8">
+        var i = 3;
+        var res;
+        localStorage.clear() ;
+        window.localStorage.removeItem('unCode');
+        window.localStorage.removeItem('RES');
+        window.localStorage.removeItem('gameStatus');
+        window.localStorage.removeItem('version');
+        function jump()
+        {
+        document.getElementById("mes").innerHTML = "<font color='red'>" + i + "</font>";
+        i -= 1;
+        res = setTimeout("jump()", 1000);
+        if(i <= 0){
+        clearTimeout(res);
+        }
+        }
+        window.onload = jump;    
+    </script>  
+        <div>
+        清理成功 页面将在<span id="mes">5</span>秒后跳转...
+        </div>     
+    </body>
+</html>

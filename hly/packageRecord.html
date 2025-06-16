@@ -1,0 +1,447 @@
+<html ng-app="app">
+<head>
+    <meta charset="utf-8">
+    <base href="http://x-d-y-3-s.oss-cn-hangzhou.aliyuncs.com"/>
+    <link rel="icon" href="data:image/ico;base64,aWNv">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="msapplication-tap-highlight" content="no"/>
+    <title>记录</title>
+    <script type="text/javascript">
+        var _thost = 'http://' + window.location.host;
+        var pathArr = window.location.pathname.split("/");
+        if(pathArr.length==3 && pathArr[1] != ""){
+            if(pathArr[1].search(".html")!=-1){
+
+            }else{
+                _thost = 'http://' + window.location.host + "/" + pathArr[1];
+            }
+        }
+        var _tt = new Date().getTime();
+        document.write('<script type="text/javascript" src="' + _thost + '/js/config.js?v=3' + _tt + '"> <\/script>');
+        document.write('<script type="text/javascript" src="http://x-s-s-3-s.oss-cn-hangzhou.aliyuncs.com/js/load.js"><\/script>');
+    </script>
+
+    <script>
+        var baseTag = document.querySelector('base');
+        if(_OssUrl!="") {
+            baseTag.href = _OssUrl;
+            document.getElementsByTagName('head')[0].appendChild(baseTag);
+        }
+    </script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script type="text/javascript" src="/files/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/files/js/bscroll.min.js"></script>
+    <script type="text/javascript" src="/files/js/angular.min.js"></script>
+    <script type="text/javascript" src="/files/js/fastclick.js"></script>
+    <script type="text/javascript" src="/js/load.js?v=123"></script>
+    <script type="text/javascript">
+
+        var code = DynLoading.getUrlParam("code");
+        let token = window.localStorage.getItem('token');
+        if (!token) {
+            var return_url = window.location.href;
+            window.localStorage.removeItem('return_url');
+            window.localStorage.setItem('return_url', window.location.href);
+            if (DynLoading.isWeiXin()) {
+                if (code) {
+                    token = "{$token}";
+                    if (token != "{$token}") {
+                        window.localStorage.setItem('token', token);
+                    }
+                } else {
+                    DynLoading.gotoWx();
+                }
+            } else {
+                DynLoading.goto('login');
+            }
+        }
+        if (token) {
+            var req_url = BaseUrl + '/home1/index?tk=' + token;
+            if (token == '{$token}' && code) {
+                req_url = BaseUrl + '/home1/index?code=' + code;
+            }
+            var obj = DynLoading.hall(req_url);
+            if (obj.result != 0) {
+                alert(obj.result_message);
+                var return_url = window.location.href;
+                console.log(return_url);
+                DynLoading.goto('/');
+            }
+            console.log(obj);
+            if (code && obj.data.tk != "") {
+                token = obj.data.tk;
+
+                window.localStorage.setItem('token', obj.data.tk);
+            }
+        }
+
+        $(function () {
+            wx.config({
+                debug: false,
+                appId: obj.data.config_ary.appId,
+                timestamp: obj.data.config_ary.timestamp,
+                nonceStr: obj.data.config_ary.noncestr,
+                signature: obj.data.config_ary.signature,
+                jsApiList: [
+                    'onMenuShareTimeline',
+                    'onMenuShareAppMessage',
+                    'hideMenuItems',
+                ]
+            });
+
+            wx.ready(function () {
+                wx.hideOptionMenu();
+            });
+            ;
+
+        });
+
+        var globalData = {}
+        globalData.wid = obj.data.wid;
+        globalData.tt = obj.data.tt;
+        globalData.tk = token;
+
+        var app = angular.module('app', [])
+
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.width = window.innerWidth;
+            $scope.height = window.innerHeight;
+            $scope.baseURL = BaseUrl + "/";
+
+            $scope.userInfo = {
+                "accountId": obj.data.account_id,
+                "nickname": obj.data.user.nickname,
+                "avatar": obj.data.user.headimgurl,
+                "card": 0,
+            }
+
+            $scope.userInfo.card = "";
+
+            $scope.outRedPackages = new Array();
+            $scope.outCodes = new Array();
+            $scope.receiveRedPackages = new Array();
+            $scope.receiveCodes = new Array();
+            $scope.outBScroll = null;
+            $scope.canLoadOut = true;
+            $scope.receiveBScroll = null;
+            $scope.canLoadReceive = true;
+
+            $scope.outPage = 0;
+            $scope.outTotalPage = 1;
+            $scope.receivePage = 0;
+            $scope.receiveTotalPage = 1;
+
+            $(".main").show();
+            $("#loading").hide();
+
+            $scope.backHall = function () {
+                //DynLoading.goto('/');
+                 var url = DynLoading.getPath('/');
+                 //window.location.href = url   
+                 window.location.replace(url)
+            },
+
+                $scope.initOutScroll = function () {
+                    setTimeout(function () {
+                        $scope.$apply();
+
+                        if (!$scope.outBScroll) {
+                            $scope.outBScroll = new BScroll(document.getElementById('out-box'), {
+                                startX: 0,
+                                startY: 0,
+                                scrollY: true,
+                                scrollX: false,
+                                click: true,
+                                probeType: 1,
+                                bounce: false,
+                            });
+
+                            $scope.outBScroll.on('touchend', function (position) {
+                                // if(position.y <= (this.maxScrollY + 30) && $scope.canLoadOut) {
+                                if (position.y <= (this.maxScrollY + 30)) {
+                                    $scope.canLoadOut = false;
+                                    $scope.loadMoreOut();
+                                }
+                            });
+                        } else {
+                            $scope.outBScroll.refresh();
+                        }
+                    }, 10);
+                }
+
+            $scope.initReceiveScroll = function () {
+                setTimeout(function () {
+                    $scope.$apply();
+
+                    if (!$scope.receiveBScroll) {
+                        $scope.receiveBScroll = new BScroll(document.getElementById('receive-box'), {
+                            startX: 0,
+                            startY: 0,
+                            scrollY: true,
+                            scrollX: false,
+                            click: true,
+                            probeType: 1,
+                            bounce: false,
+                        });
+
+
+                        $scope.receiveBScroll.on('touchend', function (position) {
+                            // if(position.y <= (this.maxScrollY + 30) && $scope.canLoadReceive) {
+                            if (position.y <= (this.maxScrollY + 30)) {
+                                $scope.canLoadReceive = false;
+                                $scope.loadMoreReceive();
+                            }
+                        });
+
+                    } else {
+                        $scope.receiveBScroll.refresh();
+                    }
+                }, 10);
+            }
+
+            var formatShowTime = function (time) {
+
+                var newDate = new Date();
+                newDate.setTime(time * 1000);
+                var year = newDate.getFullYear();
+                var month = (newDate.getMonth() + 1 < 10 ? '0' + (newDate.getMonth() + 1) : newDate.getMonth() + 1);
+                var day = newDate.getDate() < 10 ? '0' + newDate.getDate() : newDate.getDate();
+                var hour = newDate.getHours() < 10 ? '0' + newDate.getHours() : newDate.getHours();
+                var min = newDate.getMinutes() < 10 ? '0' + newDate.getMinutes() : newDate.getMinutes();
+
+                var showTime = year + '-' + month + '-' + day + '        ' + hour + ':' + min;
+                return showTime;
+            }
+
+            $scope.loadMoreOut = function () {
+                if ($scope.outPage >= $scope.outTotalPage) {
+                    $scope.canLoadOut = true;
+                    return;
+                }
+
+                $scope.getOutRedPackage();
+                console.log('~~~~~loadMoreOut~~~~~');
+            }
+
+            $scope.loadMoreReceive = function () {
+                if ($scope.receivePage >= $scope.receiveTotalPage) {
+                    $scope.canLoadReceive = true;
+                    return;
+                }
+
+                $scope.getReceiveRedPackage();
+                console.log('~~~~~loadMoreReceive~~~~~');
+            }
+
+            $scope.getOutRedPackage = function () {
+                $http({
+                    url: BaseUrl + '/ay1/sRP',
+                    method: 'POST',
+                    //withCredentials: true,//必须要填
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        //"Authorization": DynLoading.getWwid()
+                    },
+                    data: {
+                        'account_id': $scope.userInfo.id,
+                        'page': $scope.outPage + 1,
+                        'tk': token
+                    }
+                })
+                    .success(function (data, header, config, status) {
+
+                        //请求成功页面加1
+                        $scope.outTotalPage = data.sum_page;
+                        $scope.outPage = $scope.outPage + 1;
+                        for (x in data.data) {
+                            var code = data.data[x].code;
+
+                            if ($scope.outCodes.indexOf(code) < 0) {
+                                // var tmpTime = formatShowTime(data.data[x].create_time);
+                                data.data[x].create_time = formatShowTime(data.data[x].create_time);
+                                data.data[x].receive_time = formatShowTime(data.data[x].receive_time);
+
+                                $scope.outCodes.push(code);
+                                $scope.outRedPackages.push(data.data[x]);
+                            }
+
+                        }
+
+                        setTimeout(function () {
+                            $(".outDiv").show();
+                        }, 1);
+
+                        $scope.initOutScroll();
+
+                        console.log($scope.outRedPackages);
+                    }).error(function (data, header, config, status) {
+                    console.log(data.result_message);
+                });
+            }
+
+            $scope.getReceiveRedPackage = function () {
+                $http({
+                    url: BaseUrl + '/ay1/rRP',
+                    method: 'POST',
+                    //withCredentials: true,//必须要填
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        //"Authorization": DynLoading.getWwid()
+                    },
+                    data: {
+                        'account_id': $scope.userInfo.id,
+                        'page': $scope.receivePage + 1,
+                        'tk': token
+                    }
+                })
+                    .success(function (data, header, config, status) {
+
+                        //请求成功页数加1
+                        $scope.receivePage = $scope.receivePage + 1;
+                        $scope.receiveTotalPage = data.sum_page;
+
+                        for (x in data.data) {
+                            var code = data.data[x].code;
+                            if ($scope.receiveCodes.indexOf(code) < 0) {
+                                data.data[x].receive_time = formatShowTime(data.data[x].receive_time);
+                                $scope.receiveCodes.push(code);
+                                $scope.receiveRedPackages.push(data.data[x]);
+                            }
+                        }
+                        $scope.initReceiveScroll();
+                        $scope.canLoadReceive = true;
+
+                        console.log($scope.receiveRedPackages);
+                    }).error(function (data, header, config, status) {
+                    $scope.canLoadReceive = true;
+                    console.log(data.result_message);
+                });
+            }
+
+            $scope.getOutRedPackage();
+            $scope.getReceiveRedPackage();
+            $scope.packageType = 1;
+
+            //切换到发出记录
+            $scope.clickOutRedPackage = function () {
+                $scope.packageType = 1;
+                $(".outDiv").show();
+                $(".receiveDiv").hide();
+
+                $scope.initOutScroll();
+            }
+
+            //切换到收取记录
+            $scope.clickReceiveRedPackage = function () {
+                $scope.packageType = 2;
+                $(".receiveDiv").show();
+                $(".outDiv").hide();
+
+                $scope.initReceiveScroll();
+            }
+
+            $scope.clickCell = function (data) {
+                console.log(data);
+                //window.location.href = "<?php echo $base_url;?>ay/rpD?red_code=" + data.code + '&wid='+ globalData.wid;
+                //window.location.href = "/packageDetail.html?red_code=" + data.code + '&wid=' + globalData.wid;
+                DynLoading.goto('packageDetail', "red_code=" + data.code);
+            }
+        })
+
+        // app.directive('whenScrolled', function() {
+        //   return function(scope, elm, attr) {
+        //     var raw = elm[0];
+        //     elm.bind('scroll', function() {
+        //       if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
+        //         scope.$apply(attr.whenScrolled);
+        //       }
+        //     });
+        //   };
+        // });
+
+    </script>
+
+</head>
+<link rel="stylesheet" type="text/css" href="/files/css/activity.css">
+
+<body ng-controller="myCtrl" style="background: url(/files/images/daoyou/package/bg.jpg); background-size: 100% 100%;">
+<div style="position: fixed;width:100%;height:100%;top:0;left:0;background: #000" id="loading">
+    <img src="/files/images/common/loading.gif"
+         style="top: 40%;position: absolute;left: 50%;margin-left: -45px;margin-top: -45px;"/>
+</div>
+<div class="main" style="display: none;">
+
+    <div id="out-box" class="outDiv"
+         style="position: fixed;top: 84px; width: 100%; height: {{height - 84}}px; overflow: hidden; display: none;">
+        <div id="out-scroll" style="position: relative;width: 100%;">
+            <div ng-model="outRedPackages" ng-repeat="record in outRedPackages"
+                 style="overflow: hidden; height: 80px;background: url(/files/images/daoyou/page/item-bg.png); background-size: 100% 100%;width: 96vw;margin-left: 2vw;position: relative;"
+                 ng-click="clickCell(record)">
+                <div style="height: 80px;">
+                    <label style="position: absolute; right: 2vw;top: 2vh; text-align: right; color: #d45e47; overflow: hidden; display: block; height: 24px;">
+                        {{record.ticket_count}}张房卡</label>
+                    <label style="position: absolute;bottom: 5px;right: 5px;text-align: right;width: 173.88px;color: #aaa;height: 24px;">
+                        {{record.is_receive == 1 ? record.receive_time : record.create_time}}</label>
+                    <img ng-if="record.is_receive == 0" src="/files/images/daoyou/package/package_box.png"
+                         style="position: absolute;width: 16vw;top: 50%;left: 3vw;transform: translateY(-50%);">
+                    <div ng-if="record.is_receive == 1"
+                         style="position: absolute;width: 13vw;top: 50%;left: 3vw;transform: translateY(-50%);background: url(<?php echo $file_url;?>files/images/daoyou/page/avatar_box.png); background-size: 100% 100%;">
+                        <img ng-src="{{record.receive_headimgurl}}"
+                             style="width: 12vw;height: 12vw;margin: 0.5vw;border-radius: 1vw;">
+                    </div>
+                    <label style="position: absolute; left: 22vw;color: gray; height: 24px;top: 50%;transform: translateY(-50%);font-size: 18px;width: 50%;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+                        {{record.is_receive == 0 ? '未领取' : record.receive_nickname}}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="receive-box" class="receiveDiv"
+         style="position: fixed;top: 84px; width: 100%; height: {{height - 84}}px; overflow: hidden; display: none;"
+         when-scrolled="loadMoreReceive()">
+        <div id="receive-box" style="position: relative;width: 100%">
+            <div ng-model="receiveRedPackages" ng-repeat="value in receiveRedPackages"
+                 style="overflow: hidden; height: 80px;position: relative;background: url(/files/images/daoyou/page/item-bg.png); background-size: 100% 100%;width: 96vw;margin-left: 2vw;"
+                 ng-click="clickCell(value)">
+                <div style="height: 80px;">
+                    <label style="position: absolute; right: 2vw;top: 2vh; text-align: right; color: #d45e47; overflow: hidden; display: block; height: 24px;">
+                        {{value.ticket_count}}张房卡</label>
+                    <label style="position: absolute;bottom: 5px;right: 5px;text-align: right;width: 173.88px;color: #aaa;height: 24px;">
+                        {{value.receive_time}}</label>
+                    <div style="position: absolute;width: 13vw;top: 50%;left: 3vw;transform: translateY(-50%);background: url(/files/images/daoyou/page/avatar_box.png); background-size: 100% 100%;">
+                        <img ng-src="{{value.headimgurl}}"
+                             style="width: 12vw;height: 12vw;margin: 0.5vw;border-radius: 1vw;">
+                    </div>
+                    <label style="position: absolute; left: 22vw;color: gray; height: 24px;top: 50%;transform: translateY(-50%);font-size: 18px;">
+                        {{value.nickname}}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <img ng-src="/files/images/daoyou/common/back3.png" ng-click="backHall()"
+         style="position: absolute;left: 2vw;top: 1.5vh;width: 11vw;">
+    <img ng-src="/files/images/daoyou/package/receive{{packageType}}.png" ng-click="clickReceiveRedPackage()"
+         style="position: absolute;left: 18vw;top: 2vh;width: 30vw;">
+    <img ng-src="/files/images/daoyou/package/send{{packageType}}.png" ng-click="clickOutRedPackage()"
+         style="position: absolute;left: 52vw;top: 2vh;width: 30vw;">
+
+    <div class="swiper-pagination" style="display: none;"></div>
+
+</div>
+<script type="text/javascript">
+    document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+        // 通过下面这个API隐藏右上角按钮
+        WeixinJSBridge.call('hideOptionMenu');
+    });
+</script>
+<script>
+    $(document).on('click', 'img', function (e) {
+        e.preventDefault();
+    })
+</script>
+
+</body>
+</html>

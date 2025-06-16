@@ -1,0 +1,227 @@
+<html ng-app="app">
+<head>
+    <meta charset="utf-8" >
+    <base href="http://x-s-s-3-s.oss-cn-hangzhou.aliyuncs.com"/>
+    <link rel="icon" href="data:image/ico;base64,aWNv">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <title>房卡包</title>
+    <script type="text/javascript">
+                var _thost = 'http://' + window.location.host;
+        var pathArr = window.location.pathname.split("/");
+        if(pathArr.length==3 && pathArr[1] != ""){
+            if(pathArr[1].search(".html")!=-1){
+
+            }else{
+                _thost = 'http://' + window.location.host + "/" + pathArr[1];
+            }
+        }
+        var _tt = new Date().getTime();
+        document.write('<script type="text/javascript" src="' + _thost + '/js/config.js?v=1' + _tt + '"> <\/script>');
+        document.write('<script type="text/javascript" src="/js/load.js?v=1' + new Date().getTime() + '"> <\/script>');
+    </script>
+    <script type="text/javascript" src="/files/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/files/js/angular.min.js"></script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js" ></script>
+    <script type="text/javascript" src="/files/js/fastclick.js?v=12019"></script>
+    <script type="text/javascript" src="/fiesc/js/aes.js"></script>
+    <script type="text/javascript" src="/files/js/md5.js"></script>
+
+    <style>
+        .black {
+            -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
+            filter: grayscale(100%);
+        }
+    </style>
+    <script type="text/javascript">
+        var code = DynLoading.getUrlParam("code");
+        let token = window.localStorage.getItem('token');
+        if (!token) {
+            var return_url = window.location.href;
+            window.localStorage.removeItem('return_url');
+            window.localStorage.setItem('return_url', window.location.href);
+            if (DynLoading.isWeiXin()) {
+                if (code) {
+                    token = "{$token}";
+                    if (token != "{$token}") {
+                        window.localStorage.setItem('token', token);
+                    }
+                } else {
+                    DynLoading.gotoWx();
+                }
+            } else {
+                DynLoading.goto('login');
+            }
+        }
+        if (token) {
+            var req_url = BaseUrl + '/ay1/rp?tk=' + token;
+            if (token == '{$token}' && code) {
+                req_url = BaseUrl + '/ay1/rp?code=' + code;
+            }
+            var obj = DynLoading.hall(req_url);
+            if (obj.result != 0) {
+                alert(obj.result_message);
+                var return_url = window.location.href;
+                console.log(return_url);
+                DynLoading.goto('/');
+            }
+            console.log(obj);
+            if (code && obj.data.tk != "") {
+                token = obj.data.tk;
+
+                window.localStorage.setItem('token', obj.data.tk);
+            }
+        }
+
+        document.documentElement.style.fontSize = document.documentElement.clientWidth / 360 * 100 + 'px';
+        var globalData = {}
+        globalData.wid = "1";
+        globalData.tt = "1";
+
+        var app = angular.module('app', [])
+
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.width = window.innerWidth;
+            $scope.height = window.innerHeight;
+
+            $scope.userInfo = {
+                "id": obj.data.user.account_id,
+                "name": obj.data.user.nickname,
+                "avatar": obj.data.user.headimgurl,
+                "card": obj.data.card,
+            }
+
+            var socketStatus = 0;
+            $(".main").show();
+            $("#loading").hide();
+
+            $scope.activity = new Array();
+            $scope.isShowAlert = false;
+            $scope.alertType = 0;
+            $scope.alertText = "";
+            $scope.cardNum = Number($scope.userInfo.card);
+            $scope.number = 0; //输入数量
+            $scope.inputNumber = null;  //输入框数字
+
+            if ($scope.cardNum === null
+                || $scope.cardNum === undefined
+                || isNaN($scope.cardNum)) {
+                $scope.cardNum = 0;
+            }
+
+            //输入框数字改变
+            $scope.changeNumber = function () {
+                if ($scope.inputNumber > $scope.cardNum) {
+                    $scope.inputNumber = $scope.cardNum;
+                }
+
+                $scope.number = $scope.inputNumber;
+
+                console.log($scope.inputNumber);
+
+                if ($scope.number === undefined || $scope.number === null) {
+                    $scope.number = 0;
+                } else {
+                    //$scope.inputNumber = $scope.number;
+                }
+            }
+
+            $scope.createRedPackage = function () {
+
+                if ($scope.number === undefined
+                    || $scope.number === null
+                    || isNaN($scope.number)
+                    || $scope.number <= 0) {
+                    alert('请输入正确的房卡数');
+                } else {
+                    $http({
+                        url: BaseUrl + '/ay1/cRP',
+                        method: 'POST',
+                        header: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        data: {
+                            'account_id': $scope.userInfo.id,
+                            'ticket_count': $scope.number,
+                            'content': '恭喜发财',
+                            'token': token
+                        }
+                    }).success(function (data, header, config, status) {
+                        //var rpCode = data.result_message;
+                        if (data.result == 0) {
+                            $scope.cardNum = $scope.cardNum - $scope.inputNumber;
+                            DynLoading.goto('packageDetail', "red_code=" + data.data.code);
+                        } else {
+                            alert(data.result_message);
+                        }
+
+                    }).error(function (data, header, config, status) {
+                        alert(data.result_message);
+                    });
+                }
+            }
+            $scope.gotoHall = function () {
+                //alert('你点击了我的');
+                DynLoading.goto('/');
+            }
+            $scope.gotoMyRedPackage = function () {
+                //alert('你点击了我的');
+                DynLoading.goto('packageRecord');
+            }
+        })
+    </script>
+</head>
+<link rel="stylesheet" type="text/css" href="/files/css/activity.css">
+
+<body ng-controller="myCtrl" style="background: #000;" >
+<div style="position: fixed;width:100%;height:100%;top:0;left:0;background: #000" id="loading">
+    <img src="/files/images/common/loading.gif" style="top: 40%;position: absolute;left: 50%;margin-left: -45px;margin-top: -45px;" />
+</div>
+<div class="main" style="display: none;">
+
+    <img src="/files/images/redpackage/redpackage_bg.jpg" style="width: 100%;position: relative;height:100%" usemap="#planetmap" />
+
+    <div style="height: 44px; position: fixed; top: 22px; left: 22px; right: 22px;">
+        <p style="font-size: 14pt; color: orange">你的房卡：{{cardNum}} 张</p>
+    </div>
+    <div style="height: 44px; position: fixed; top: 60px; left: 22px; right: 22px; background-color: #fff; border-radius: 4px; overflow: hidden; ">
+        <form style="">
+            <label style="top: 10px; left: 10px; width: 80px;height: 100%; font-size: 13pt; text-align: left; position: absolute;">放入房卡</label>
+            <input id="pnumber" type="number" ng-maxlength=9 name="packagenumber" placeholder=0
+                   ng-model="inputNumber" ng-change="changeNumber()" style="left: 90px; width: {{width - 170}}px; height: 100%; position: absolute; font-size: 13pt; color: gray; text-align: right;"></input>
+            <label style="position: absolute; top: 10px; height: 100%; right: 10px;width: 25px; color: black; font-size: 13pt; text-align: right;">张</label>
+        </form>
+    </div>
+    <div style="position: fixed; top: 144px; left: 22px; right: 22px; height: 80px;">
+        <p style="text-align: center;">
+            <span style="color: orange; font-size: 40pt">{{number}}</span>
+            <span style="color: orange; font-size: 13pt">张</span>
+        </p>
+    </div>
+
+    <div id="createPackage" style="height: 44px; position: fixed; top: 300px; left: 50px; right: 50px; background-color: orange; border-radius: 22px; overflow: hidden;" ng-click="createRedPackage()">
+        <p style="top: 7px; width: 100%; height: 100%; font-size: 15pt; text-align: center; position: relative; color: white;">制作房卡</p>
+    </div>
+    <div style="left: 22px; right: 22px; top: {{height - 120}}px; position: fixed;" >
+        <p style="text-align: center; color: #fff; font-size: 12pt"></p>
+    </div>
+    <div style="position: fixed; left: 22px; right: 22px; top: {{height - 180}}px; text-align: center;" ng-click="gotoHall()">
+        <p style="color:#6a94fc; font-size: 12pt;text-align: center; width: 100%;">返回首页</p>
+    </div>
+    <div style="position: fixed; left: 22px; right: 22px; top: {{height - 120}}px; text-align: center;" ng-click="gotoMyRedPackage()">
+        <p style="color:#6a94fc; font-size: 12pt;text-align: center; width: 100%;">我的房卡记录</p>
+    </div>
+</div>
+<script type="text/javascript">
+    document.addEventListener('WeixinJSBridgeReady', function onBridgeReady() {
+        // 通过下面这个API隐藏右上角按钮
+        WeixinJSBridge.call('hideOptionMenu');
+    });
+</script>
+<script>
+    $(document).on('click', 'img', function(e){
+        e.preventDefault();
+    })
+</script>
+
+</body>
+</html>
